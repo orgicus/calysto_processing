@@ -153,67 +153,67 @@ class ProcessingKernel(MetaKernel):
         with open(os.path.join(in_directory, filename), "w") as fp:
             fp.write(code)
 
-        processing_java = os.environ.get("PROCESSING_JAVA", "processing-java")
-        cmd = [processing_java,
-               "--sketch=%s" % in_directory,
-               "--build", "--force",
-               "--output=%s" % out_directory]
-        try:
-            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        except:
-            self.Error("Unable to run command:", cmd)
-            return
-        stdout, stderr = [str(bin, encoding="utf-8") for bin in p.communicate()]
+#         processing_java = os.environ.get("PROCESSING_JAVA", "processing-java")
+#         cmd = [processing_java,
+#                "--sketch=%s" % in_directory,
+#                "--build", "--force",
+#                "--output=%s" % out_directory]
+#         try:
+#             p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#         except:
+#             self.Error("Unable to run command:", cmd)
+#             return
+#         stdout, stderr = [str(bin, encoding="utf-8") for bin in p.communicate()]
 
-        if stderr:
-            # 'other messages here...\nSketch.pde:8:0:8:0: The field Component.y is not visible\n'
-            # sketch name:line start: col start: line end: col end: message
-            # empty if successful
-            for line in stderr.split("\n"):
-                if line.strip() == "":
-                    continue
-                if line.startswith(filename):
-                    tempname, line_start, col_start, line_end, col_end, message = line.split(":", 5)
-                    message = message.strip()
-                    code_lines = code.split("\n")
-                    line_start = int(line_start)
-                    line_end = int(line_end)
-                    col_start = int(col_start)
-                    if line_end == line_start:
-                        line_end = line_start + 1
-                    display_start = max(0, line_start - 3)
-                    display_end = min(line_start + 3, len(code_lines))
-                    if col_start:
-                        self.Error("           " + (" " * (col_start - 1)) + "|")
-                        self.Error("           " + (" " * (col_start - 1)) + "V")
-                    self.Error(" Line     +" + ("-" * 75))
-                    for line in range(display_start, display_end):
-                        self.Error("%5s: %s | %s" % (line + 1, "->" if (line + 1) == line_start else "  ", code_lines[line]))
-                    self.Error("          +" + ("-" * 75))
-                    self.Error("")
-                    self.Error("Compile error in line %d: %s" % (line_start, message))
-                    #self.Print("Highlighted: %s %s %s %s" % (line_start - 2, 0, line_end - 2, 0))
-                    self.Display(HTML("""
-<style type="text/css">
-      .styled-background { background-color: #ff7; }
-</style>
+#         if stderr:
+#             # 'other messages here...\nSketch.pde:8:0:8:0: The field Component.y is not visible\n'
+#             # sketch name:line start: col start: line end: col end: message
+#             # empty if successful
+#             for line in stderr.split("\n"):
+#                 if line.strip() == "":
+#                     continue
+#                 if line.startswith(filename):
+#                     tempname, line_start, col_start, line_end, col_end, message = line.split(":", 5)
+#                     message = message.strip()
+#                     code_lines = code.split("\n")
+#                     line_start = int(line_start)
+#                     line_end = int(line_end)
+#                     col_start = int(col_start)
+#                     if line_end == line_start:
+#                         line_end = line_start + 1
+#                     display_start = max(0, line_start - 3)
+#                     display_end = min(line_start + 3, len(code_lines))
+#                     if col_start:
+#                         self.Error("           " + (" " * (col_start - 1)) + "|")
+#                         self.Error("           " + (" " * (col_start - 1)) + "V")
+#                     self.Error(" Line     +" + ("-" * 75))
+#                     for line in range(display_start, display_end):
+#                         self.Error("%5s: %s | %s" % (line + 1, "->" if (line + 1) == line_start else "  ", code_lines[line]))
+#                     self.Error("          +" + ("-" * 75))
+#                     self.Error("")
+#                     self.Error("Compile error in line %d: %s" % (line_start, message))
+#                     #self.Print("Highlighted: %s %s %s %s" % (line_start - 2, 0, line_end - 2, 0))
+#                     self.Display(HTML("""
+# <style type="text/css">
+#       .styled-background { background-color: #ff7; }
+# </style>
 
-<script>
-if (typeof markedText !== 'undefined') {
-        markedText.clear();
-}
-IPython.notebook.select_prev()
-var cell = IPython.notebook.get_selected_cell();
-markedText = cell.code_mirror.markText({line: %s, col: %s},
-                                       {line: %s, col: %s},
-                                       {className: "styled-background"});
-cell.show_line_numbers(1)
-IPython.notebook.select_next()
-</script>
-                    """ % (line_start - 2, 0, line_end - 2, 0)))
-                else:
-                    self.Error(line)
-            return
+# <script>
+# if (typeof markedText !== 'undefined') {
+#         markedText.clear();
+# }
+# IPython.notebook.select_prev()
+# var cell = IPython.notebook.get_selected_cell();
+# markedText = cell.code_mirror.markText({line: %s, col: %s},
+#                                        {line: %s, col: %s},
+#                                        {className: "styled-background"});
+# cell.show_line_numbers(1)
+# IPython.notebook.select_next()
+# </script>
+#                     """ % (line_start - 2, 0, line_end - 2, 0)))
+#                 else:
+#                     self.Error(line)
+#             return
         # else:
         # stdout
         # 'Finished.\n', if successful; '' otherwise
